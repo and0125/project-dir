@@ -1,6 +1,5 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
 import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
 
 export async function POST(request) {
