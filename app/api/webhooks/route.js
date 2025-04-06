@@ -1,5 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
 
 export async function POST(request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -48,17 +50,45 @@ export async function POST(request) {
 
   // Do something with payload
   // For this guide, log payload to console
-  const { id } = event.data;
-  const eventType = event.type;
+  const { id } = event?.data;
+  const eventType = event?.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
   console.log("Webhook payload:", body);
 
-  if (eventType === "user.created") {
-    console.log("user created");
+  if (eventType === "user.created" || eventType === "user.updated") {
+    console.log("user created or updated");
+
+    const { id, first_name, last_name, image_url, email_addresses, username } =
+      event?.data;
+
+    try {
+      await createOrUpdateUser(
+        id,
+        first_name,
+        last_name,
+        image_url,
+        email_addresses,
+        username
+      );
+    } catch (error) {
+      console.log("error creating or updating user: ", error);
+      return new Response("Error Occurred", {
+        status: 400,
+      });
+    }
   }
 
-  if (eventType === "user.updated") {
-    console.log("user updated");
+  if (eventType === "user.deleted") {
+    const { id } = event?.data;
+    try {
+      await deleteUser(id);
+      return new Response("user is deleted", {
+        status: 200,
+      });
+    } catch (error) {
+      console.log("error deleting user:", error);
+      return new Response("error occured", { status: 400 });
+    }
   }
 
   return new Response("Webhook received", { status: 200 });
