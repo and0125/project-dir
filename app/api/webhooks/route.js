@@ -30,11 +30,11 @@ export async function POST(request) {
   const payload = await request.json();
   const body = JSON.stringify(payload);
 
-  let evt;
+  let event;
 
   // Verify payload with headers
   try {
-    evt = wh.verify(body, {
+    event = wh.verify(body, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
@@ -48,10 +48,18 @@ export async function POST(request) {
 
   // Do something with payload
   // For this guide, log payload to console
-  const { id } = evt.data;
-  const eventType = evt.type;
+  const { id } = event.data;
+  const eventType = event.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
   console.log("Webhook payload:", body);
+
+  if (eventType === "user.created") {
+    console.log("user created");
+  }
+
+  if (eventType === "user.updated") {
+    console.log("user updated");
+  }
 
   return new Response("Webhook received", { status: 200 });
 }
